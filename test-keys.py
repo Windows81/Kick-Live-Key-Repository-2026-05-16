@@ -10,21 +10,17 @@ while True:
     if not text:
         break
     (repo_nwo, link) = text.split(',', 2)
-    if '/' not in link:
+    if '/' not in repo_nwo:
         # Assuming that the CSV header is the only line not to match.
         print(text)
         continue
     lines[link] = text
 
 for (link, text) in lines.items():
-    try:
-        output = subprocess.run(
-            f'ffmpeg -f lavfi -i color=black -c copy -f flv {link}',
-            stderr=subprocess.PIPE,
-            timeout=3,
-        ).stderr
-    except subprocess.TimeoutExpired:
-        continue
+    output = subprocess.run(
+        f'ffmpeg -f lavfi -i color=black -c copy -f flv rtmp://fa723fc1b171.global-contribute.live-video.net/app/{link}',
+        stderr=subprocess.PIPE,
+    ).stderr
 
     if b'Function not implemented' not in output:
         print('-', file=sys.stderr)
