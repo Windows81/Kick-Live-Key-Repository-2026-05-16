@@ -3,13 +3,7 @@ var resultDump = {};
 function buildQuery(chars) {
 	return `live-video /sk_[a-z]{2}-[a-z]+-[${chars}]+_[A-Za-z0-9]{9,17}_[0-9][A-Za-z0-9]{20,30}/`;
 }
-var QUERIES = [
-	buildQuery("1-9"),
-	buildQuery("a-f"),
-	buildQuery("g-m"),
-	buildQuery("n-r"),
-	buildQuery("s-z"),
-];
+var QUERIES = [buildQuery("1-9"), buildQuery("a-f"), buildQuery("g-m"), buildQuery("n-r"), buildQuery("s-z")];
 
 console.log("Running...");
 for (var query of QUERIES) {
@@ -47,10 +41,16 @@ for (var query of QUERIES) {
 		pageCount = j.payload.page_count;
 
 		for (var result of j.payload.results) {
-			var resultData = result.snippets.flatMap((e) => e.lines).join("\n");
+			var resultData = result.snippets
+				.flatMap((e) => e.lines)
+				.join("\n")
+				.replaceAll(/<\/?mark>/g, "");
+
+			var domainMatches = Array.from(resultData.matchAll("[0-9a-f]{12}\.global-contribute\.live-video\.net").map((e) => e[0]));
 			var keyMatches = Array.from(resultData.matchAll("sk_[A-Za-z0-9_-]+").map((e) => e[0]));
-			var appendedValues = Object.fromEntries(keyMatches.map((k) => [`${result.repo_nwo},${k}`, true]));
-			Object.assign(resultDump, appendedValues);
+
+			var keyDomainMatches = keyMatches.flatMap((k) => domainMatches.map((d) => `rtmp://${d}/app/${k}`));
+			Object.assign(resultDump, Object.fromEntries(keyDomainMatches.map((k) => [`${result.repo_nwo},${k}`, true])));
 		}
 
 		i++;
