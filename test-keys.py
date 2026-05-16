@@ -1,6 +1,5 @@
 import subprocess
 import sys
-import re
 
 lines = {}
 while True:
@@ -10,19 +9,22 @@ while True:
         break
     if not text:
         break
-    match = re.search(
-        r'sk_[A-Za-z0-9_-]+', text)
-    if not match:
-        print(text)  # Assuming that the CSV header is the only line not to match.
+    (repo_nwo, link) = text.split(',', 2)
+    if '/' not in link:
+        # Assuming that the CSV header is the only line not to match.
+        print(text)
         continue
-    token = match.group(0)
-    lines[token] = text
+    lines[link] = text
 
-for (token, text) in lines.items():
-    output = subprocess.run(
-        f'ffmpeg -f lavfi -i color=black -c copy -f flv rtmps://fa723fc1b171.global-contribute.live-video.net/app/{token}',
-        stderr=subprocess.PIPE,
-    ).stderr
+for (link, text) in lines.items():
+    try:
+        output = subprocess.run(
+            f'ffmpeg -f lavfi -i color=black -c copy -f flv {link}',
+            stderr=subprocess.PIPE,
+            timeout=3,
+        ).stderr
+    except subprocess.TimeoutExpired:
+        continue
 
     if b'Function not implemented' not in output:
         print('-', file=sys.stderr)
