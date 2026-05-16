@@ -48,7 +48,7 @@ for (var query of QUERIES) {
 
 		for (var result of j.payload.results) {
 			var resultData = result.snippets.flatMap((e) => e.lines).join("\n");
-			var keyMatches = Array.from(resultData.matchAll("[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}").map((e) => e[0]));
+			var keyMatches = Array.from(resultData.matchAll("sk_[A-Za-z0-9_-]+").map((e) => e[0]));
 			var appendedValues = Object.fromEntries(keyMatches.map((k) => [`${result.repo_nwo},${k}`, true]));
 			Object.assign(resultDump, appendedValues);
 		}
