@@ -1,7 +1,7 @@
 var resultDump = {};
 
 function buildQuery(chars) {
-	return `live-video /sk_[a-z]{2}-[a-z]+-[${chars}]+_[A-Za-z0-9]{9,17}_[0-9][A-Za-z0-9]{20,30}/`;
+	return `live-video /sk_[a-z]{2}-[a-z]+-[1-9]+_[A-Za-z0-9]{9,17}_[${chars}][A-Za-z0-9]{20,40}/`;
 }
 var QUERIES = [buildQuery("1-9"), buildQuery("a-f"), buildQuery("g-m"), buildQuery("n-r"), buildQuery("s-z")];
 
@@ -46,10 +46,12 @@ for (var query of QUERIES) {
 				.join("\n")
 				.replaceAll(/<\/?mark>/g, "");
 
-			var domainMatches = Array.from(resultData.matchAll("[0-9a-f]{12}\.global-contribute\.live-video\.net").map((e) => e[0]));
+			var domainMatches = Array.from(
+				resultData.matchAll("rtmps?://[0-9a-f]{12}\.global-contribute\.live-video\.net(:[0-9]+)?").map((e) => e[0]),
+			);
 			var keyMatches = Array.from(resultData.matchAll("sk_[A-Za-z0-9_-]+").map((e) => e[0]));
 
-			var keyDomainMatches = keyMatches.flatMap((k) => domainMatches.map((d) => `rtmp://${d}/app/${k}`));
+			var keyDomainMatches = keyMatches.flatMap((k) => domainMatches.map((d) => `${d}/${k}`));
 			Object.assign(resultDump, Object.fromEntries(keyDomainMatches.map((k) => [`${result.repo_nwo},${k}`, true])));
 		}
 
